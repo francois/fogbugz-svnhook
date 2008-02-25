@@ -64,7 +64,7 @@ Main {
     when "config"
       FogbugzSvnhook.config(:uri => real_uri)
     when "commit"
-      FogbugzSvnhook.commit(:uri => real_uri, :repository => params["repository"].value, :revision => params["revision"].value, :svnlook => params["svnlook"].value)
+      FogbugzSvnhook.commit(:uri => real_uri, :repository => params["repository"].value, :revision => params["revision"].value, :svnlook => params["svnlook"].value, :config => params["config"].value)
     else
       raise ArgumentError, "Unknown command: #{params["command"].value}"
     end

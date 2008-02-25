@@ -19,8 +19,14 @@ module FogbugzSvnhook
       update_cases(committer, cases_to_manage)
     end
 
+    def config_file
+      options[:config]
+    end
+
     def config
-      {}
+      return @config if @config
+      raise ArgumentError, "Cannot read config file: #{config_file}" unless File.file?(config_file) && File.readable?(config_file)
+      @config = YAML::load(ERB.new(File.read(config_file)).result)
     end
 
     def get_missing_options
@@ -49,12 +55,15 @@ module FogbugzSvnhook
     end
 
     def map_committer_to_token
-      say "Mapping committer to token"
+      author = `#{svnlook} author --revision #{revision} #{repository}`
+      raise "Failed to get commit message, svnlook exited with status #{$?.exitstatus}" unless $?.success?
+      author.chomp!
+      config["tokens"][author]
     end
 
     def update_cases(committer, cases)
       connect
-      say "Updating cases"
+      say "Updating cases, as touched by #{committer}"
       say cases.inspect
     end
   end
