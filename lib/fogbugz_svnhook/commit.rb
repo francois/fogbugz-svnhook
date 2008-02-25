@@ -34,7 +34,18 @@ module FogbugzSvnhook
     end
 
     def parse(msg)
-      say "Parsing #{msg.inspect}"
+      returning(Hash.new {|h,k| h[k] = Array.new}) do |actions|
+        msg.scan(/closes?:?\s*#\d+(?:,\s*#\d+)*/i) do |section|
+          case section
+          when /close/i
+            section.scan(/#\d+/) do |bugid|
+              actions[bugid[1..-1].to_i] << :close
+            end
+          else
+            raise "Unhandled section: #{section.inspect}"
+          end
+        end
+      end
     end
 
     def map_committer_to_token
@@ -44,6 +55,7 @@ module FogbugzSvnhook
     def update_cases(committer, cases)
       connect
       say "Updating cases"
+      say cases.inspect
     end
   end
 end
