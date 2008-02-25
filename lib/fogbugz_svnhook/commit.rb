@@ -63,8 +63,20 @@ module FogbugzSvnhook
 
     def update_cases(committer, cases)
       connect
-      say "Updating cases, as touched by #{committer}"
-      say cases.inspect
+      cases.each do |bugid, actions|
+        actions.each do |action|
+          send(action, bugid, committer)
+        end
+      end
+    end
+
+    def close(bugid, committer)
+      action_uri = api_uri.dup
+      action_uri.query = {"cmd" => "close", "token" => committer, "ixBug" => bugid, "sEvent" => "Closed in r#{revision}."}.to_query
+      doc = read(action_uri)
+      error = REXML::XPath.first(doc.root, "//response/error")
+      raise "Could not close #{bugid}:\n#{doc}" if error
+      $stderr.puts "Closed #{bugid}"
     end
   end
 end
