@@ -1,0 +1,65 @@
+#!/usr/bin/env ruby
+
+require "rubygems"
+require "main"
+require "uri"
+require "lib/fogbugz_svnhook"
+
+Main {
+  option("url") {
+    required
+    argument_required
+    validate {|url| URI.parse(url).absolute?}
+    description "The URL to the FogBugz installation, typically http://yoursite.com/fogbugz/"
+  }
+
+  option("config", "C") {
+    argument_required
+    description "The path to a fogbugz-svnhook config file (YAML)"
+  }
+
+  option("svnlook") {
+    argument_required
+    default "/usr/bin/svnlook"
+    description "The path to the svnlook executable (defaults to /usr/bin/svnlook)"
+  }
+
+  option("email") {
+    argument_required
+    description "The E-Mail address with which you login to FogBugz"
+  }
+
+  option("password") {
+    argument_required
+    description "The password you use on the FogBugz site"
+  }
+
+  argument("command") {
+    required
+  }
+
+  argument("repository") {
+    optional
+    description "The path to the Subversion repository"
+  }
+
+  argument("revision") {
+    optional
+    description "The revision which is being committed"
+  }
+
+  def run
+    real_url = URI.parse(params["url"].value)
+
+    case params["command"].value
+    when "login"
+      FogbugzSvnhook.login(:url => real_url, :email => params["email"].value, :password => params["password"].value)
+    when "config"
+      FogbugzSvnhook.config(:url => real_url)
+    when "commit"
+      Fogbugz::Svnhook.commit(:url => real_url, :repository => params["repository"].value, :revision => params["revision"].value, :svnlook => params["svnlook"].value)
+    else
+      raise ArgumentError, "Unknown command: #{params["command"].value}"
+    end
+  end
+}
