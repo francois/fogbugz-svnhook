@@ -49,15 +49,15 @@ Main {
   }
 
   def run
-    real_url = URI.parse(params["url"].value)
+    real_uri = URI.parse(params["url"].value)
 
     case params["command"].value
     when "login"
-      FogbugzSvnhook.login(:url => real_url, :email => params["email"].value, :password => params["password"].value)
+      FogbugzSvnhook.login(:uri => real_uri, :email => params["email"].value, :password => params["password"].value)
     when "config"
-      FogbugzSvnhook.config(:url => real_url)
+      FogbugzSvnhook.config(:uri => real_uri)
     when "commit"
-      Fogbugz::Svnhook.commit(:url => real_url, :repository => params["repository"].value, :revision => params["revision"].value, :svnlook => params["svnlook"].value)
+      Fogbugz::Svnhook.commit(:uri => real_uri, :repository => params["repository"].value, :revision => params["revision"].value, :svnlook => params["svnlook"].value)
     else
       raise ArgumentError, "Unknown command: #{params["command"].value}"
     end
