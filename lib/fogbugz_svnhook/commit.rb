@@ -41,7 +41,7 @@ module FogbugzSvnhook
 
     def parse(msg)
       returning(Hash.new {|h,k| h[k] = Array.new}) do |actions|
-        msg.scan(/(?:(?:fix(?:es)?)|(?:closes?)):?\s*#\d+(?:,\s*#\d+)*/i) do |section|
+        msg.scan(/(?:(?:implements?)|(?:fix(?:es)?)|(?:closes?)):?\s*#\d+(?:,\s*#\d+)*/i) do |section|
           case section
           when /close/i
             section.scan(/#\d+/) do |bugid|
@@ -50,6 +50,10 @@ module FogbugzSvnhook
           when /fix/i
             section.scan(/#\d+/) do |bugid|
               actions[bugid[1..-1].to_i] << :fix
+            end
+          when /implement/i
+            section.scan(/#\d+/) do |bugid|
+              actions[bugid[1..-1].to_i] << :implement
             end
           else
             raise "Unhandled section: #{section.inspect}"
@@ -94,6 +98,17 @@ module FogbugzSvnhook
       error = REXML::XPath.first(doc.root, "//response/error")
       raise "Could not fix #{bugid}:\n#{doc}" if error
       $stderr.puts "Fixed #{bugid}"
+    end
+
+    def implement(bugid, committer)
+      action_uri = api_uri.dup
+      action_uri.query = {"cmd" => "resolve", "token" => committer,
+                          "ixBug" => bugid, "ixStatus" => STATES[:implemented],
+                          "sEvent" => "Implemented in r#{revision}."}.to_query
+      doc = read(action_uri)
+      error = REXML::XPath.first(doc.root, "//response/error")
+      raise "Could not fix #{bugid}:\n#{doc}" if error
+      $stderr.puts "Implemented #{bugid}"
     end
 
     STATES = {:fixed => 2, :completed => 15, :implemented => 8}
