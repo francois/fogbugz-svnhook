@@ -41,11 +41,15 @@ module FogbugzSvnhook
 
     def parse(msg)
       returning(Hash.new {|h,k| h[k] = Array.new}) do |actions|
-        msg.scan(/closes?:?\s*#\d+(?:,\s*#\d+)*/i) do |section|
+        msg.scan(/(?:(?:fix(?:es)?)|(?:closes?)):?\s*#\d+(?:,\s*#\d+)*/i) do |section|
           case section
           when /close/i
             section.scan(/#\d+/) do |bugid|
               actions[bugid[1..-1].to_i] << :close
+            end
+          when /fix/i
+            section.scan(/#\d+/) do |bugid|
+              actions[bugid[1..-1].to_i] << :fix
             end
           else
             raise "Unhandled section: #{section.inspect}"
@@ -72,11 +76,26 @@ module FogbugzSvnhook
 
     def close(bugid, committer)
       action_uri = api_uri.dup
-      action_uri.query = {"cmd" => "close", "token" => committer, "ixBug" => bugid, "sEvent" => "Closed in r#{revision}."}.to_query
+      action_uri.query = {"cmd" => "close", "token" => committer,
+                          "ixBug" => bugid,
+                          "sEvent" => "Closed in r#{revision}."}.to_query
       doc = read(action_uri)
       error = REXML::XPath.first(doc.root, "//response/error")
       raise "Could not close #{bugid}:\n#{doc}" if error
       $stderr.puts "Closed #{bugid}"
     end
+
+    def fix(bugid, committer)
+      action_uri = api_uri.dup
+      action_uri.query = {"cmd" => "resolve", "token" => committer,
+                          "ixBug" => bugid, "ixStatus" => STATES[:fixed],
+                          "sEvent" => "Fixed in r#{revision}."}.to_query
+      doc = read(action_uri)
+      error = REXML::XPath.first(doc.root, "//response/error")
+      raise "Could not fix #{bugid}:\n#{doc}" if error
+      $stderr.puts "Fixed #{bugid}"
+    end
+
+    STATES = {:fixed => 2, :completed => 15, :implemented => 8}
   end
 end
