@@ -1,6 +1,7 @@
 $:.unshift File.dirname(__FILE__)
 
 require "fogbugz_svnhook/login"
+require "fogbugz_svnhook/logoff"
 
 module FogbugzSvnhook
   class << self
@@ -8,8 +9,8 @@ module FogbugzSvnhook
       FogbugzSvnhook::Login.new(options).run
     end
 
-    def logout(options)
-      FogbugzSvnhook::Logout.new(options).run
+    def logoff(options)
+      FogbugzSvnhook::Logoff.new(options).run
     end
   end 
 end

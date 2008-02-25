@@ -29,6 +29,11 @@ Main {
     description "The E-Mail address with which you login to FogBugz"
   }
 
+  option("token") {
+    argument_required
+    description "The token with which you are authenticated to FogBugz"
+  }
+
   option("password") {
     argument_required
     description "The password you use on the FogBugz site"
@@ -54,6 +59,8 @@ Main {
     case params["command"].value
     when "login"
       FogbugzSvnhook.login(:uri => real_uri, :email => params["email"].value, :password => params["password"].value)
+    when "logoff"
+      FogbugzSvnhook.logoff(:uri => real_uri, :token => params["token"].value)
     when "config"
       FogbugzSvnhook.config(:uri => real_uri)
     when "commit"
