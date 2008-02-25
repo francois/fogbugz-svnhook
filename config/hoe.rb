@@ -1,16 +1,16 @@
 require 'fogbugz_svnhook/version'
 
-AUTHOR = 'FIXME full name'  # can also be an array of Authors
-EMAIL = "FIXME email"
-DESCRIPTION = "description of gem"
-GEM_NAME = 'fogbugz_svnhook' # what ppl will type to install your gem
-RUBYFORGE_PROJECT = 'fogbugz_svnhook' # The unix name for your project
+AUTHOR = 'François Beausoleil'  # can also be an array of Authors
+EMAIL = "francois@teksol.info"
+DESCRIPTION = "A Subversion post-commit hook that submits data to a FogBugz install, and allows issue management using Trac-like keywords within the commit message"
+GEM_NAME = 'fogbugz-svnhook' # what ppl will type to install your gem
+RUBYFORGE_PROJECT = 'fogbugz-svnhook' # The unix name for your project
 HOMEPATH = "http://#{RUBYFORGE_PROJECT}.rubyforge.org"
 DOWNLOAD_PATH = "http://rubyforge.org/projects/#{RUBYFORGE_PROJECT}"
 
 @config_file = "~/.rubyforge/user-config.yml"
 @config = nil
-RUBYFORGE_USERNAME = "unknown"
+RUBYFORGE_USERNAME = "fbos"
 def rubyforge_username
   unless @config
     begin
@@ -58,7 +58,9 @@ hoe = Hoe.new(GEM_NAME, VERS) do |p|
   
   # == Optional
   p.changes = p.paragraphs_of("History.txt", 0..1).join("\n\n")
-  #p.extra_deps = []     # An array of rubygem dependencies [name, version], e.g. [ ['active_support', '>= 1.3.1'] ]
+  p.extra_deps = [
+    ["main", ">= 2.5.0"]
+  ]     # An array of rubygem dependencies [name, version], e.g. [ ['active_support', '>= 1.3.1'] ]
   
   #p.spec_extras = {}    # A hash of extra values to set in the gemspec.
   
