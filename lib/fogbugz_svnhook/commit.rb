@@ -28,7 +28,6 @@ module FogbugzSvnhook
     end
 
     def get_commit_message
-      say "Retrieving commit message"
       msg = `#{svnlook} log --revision #{revision} #{repository}`
       return msg if $?.success?
       raise "Failed to get commit message, svnlook exited with status #{$?.exitstatus}"
