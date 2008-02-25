@@ -41,7 +41,7 @@ module FogbugzSvnhook
 
     def parse(msg)
       returning(Hash.new {|h,k| h[k] = Array.new}) do |actions|
-        msg.scan(/(?:(?:(?:re)?(?:opens?|activates?))|(?:implements?)|(?:fix(?:es)?)|(?:closes?)):?\s*#\d+(?:,\s*#\d+)*/i) do |section|
+        msg.scan(/(?:(?:references?)|(?:(?:re)?(?:opens?|activates?))|(?:implements?)|(?:fix(?:es)?)|(?:closes?)):?\s*#\d+(?:,\s*#\d+)*/i) do |section|
           case section
           when /close/i
             section.scan(/#\d+/) do |bugid|
@@ -62,6 +62,10 @@ module FogbugzSvnhook
           when /open/i
             section.scan(/#\d+/) do |bugid|
               actions[bugid[1..-1].to_i] << :reopen
+            end
+          when /reference/i
+            section.scan(/#\d+/) do |bugid|
+              actions[bugid[1..-1].to_i] << :reference
             end
           else
             raise "Unhandled section: #{section.inspect}"
@@ -139,6 +143,17 @@ module FogbugzSvnhook
       error = REXML::XPath.first(doc.root, "//response/error")
       raise "Could not reactivate #{bugid}:\n#{doc}" if error
       $stderr.puts "Reactivated #{bugid}"
+    end
+
+    def reference(bugid, committer)
+      action_uri = api_uri.dup
+      action_uri.query = {"cmd" => "edit", "token" => committer,
+                          "ixBug" => bugid,
+                          "sEvent" => "Referenced in r#{revision}."}.to_query
+      doc = read(action_uri)
+      error = REXML::XPath.first(doc.root, "//response/error")
+      raise "Could not reference #{bugid}:\n#{doc}" if error
+      $stderr.puts "Referenced #{bugid}"
     end
 
     STATES = {:fixed => 2, :completed => 15, :implemented => 8}
