@@ -18,7 +18,7 @@ module FogbugzSvnhook
       msg = get_commit_message
       cases_to_manage = parse(msg)
       committer = map_committer_to_token
-      update_cases(committer, cases_to_manage)
+      update_cases(committer, msg, cases_to_manage)
     end
 
     def config_file
@@ -54,75 +54,75 @@ module FogbugzSvnhook
       config["tokens"][author]
     end
 
-    def update_cases(committer, cases)
+    def update_cases(committer, msg, cases)
       connect
       cases.each do |bugid, actions|
         actions.each do |action|
-          send(action, bugid, committer)
+          send(action, bugid, committer, msg)
         end
       end
     end
 
-    def close(bugid, committer)
+    def close(bugid, committer, msg)
       action_uri = api_uri.dup
       action_uri.query = {"cmd" => "close", "token" => committer,
                           "ixBug" => bugid,
-                          "sEvent" => "Closed in r#{revision}."}.to_query
+                          "sEvent" => "Closed in r#{revision}:  #{msg}"}.to_query
       doc = read(action_uri)
       error = REXML::XPath.first(doc.root, "//response/error")
       raise "Could not close #{bugid}:\n#{doc}" if error
       $stderr.puts "Closed #{bugid}"
     end
 
-    def fix(bugid, committer)
+    def fix(bugid, committer, msg)
       action_uri = api_uri.dup
       action_uri.query = {"cmd" => "resolve", "token" => committer,
                           "ixBug" => bugid, "ixStatus" => STATES[:fixed],
-                          "sEvent" => "Fixed in r#{revision}."}.to_query
+                          "sEvent" => "Fixed in r#{revision}:  #{msg}"}.to_query
       doc = read(action_uri)
       error = REXML::XPath.first(doc.root, "//response/error")
       raise "Could not fix #{bugid}:\n#{doc}" if error
       $stderr.puts "Fixed #{bugid}"
     end
 
-    def implement(bugid, committer)
+    def implement(bugid, committer, msg)
       action_uri = api_uri.dup
       action_uri.query = {"cmd" => "resolve", "token" => committer,
                           "ixBug" => bugid, "ixStatus" => STATES[:implemented],
-                          "sEvent" => "Implemented in r#{revision}."}.to_query
+                          "sEvent" => "Implemented in r#{revision}:  #{msg}"}.to_query
       doc = read(action_uri)
       error = REXML::XPath.first(doc.root, "//response/error")
       raise "Could not implement #{bugid}:\n#{doc}" if error
       $stderr.puts "Implemented #{bugid}"
     end
 
-    def reopen(bugid, committer)
+    def reopen(bugid, committer, msg)
       action_uri = api_uri.dup
       action_uri.query = {"cmd" => "reopen", "token" => committer,
                           "ixBug" => bugid,
-                          "sEvent" => "Reopened in r#{revision}."}.to_query
+                          "sEvent" => "Reopened in r#{revision}:  #{msg}"}.to_query
       doc = read(action_uri)
       error = REXML::XPath.first(doc.root, "//response/error")
       raise "Could not reopen #{bugid}:\n#{doc}" if error
       $stderr.puts "Reopened #{bugid}"
     end
 
-    def reactivate(bugid, committer)
+    def reactivate(bugid, committer, msg)
       action_uri = api_uri.dup
       action_uri.query = {"cmd" => "reactivate", "token" => committer,
                           "ixBug" => bugid,
-                          "sEvent" => "Reactivated in r#{revision}."}.to_query
+                          "sEvent" => "Reactivated in r#{revision}:  #{msg}"}.to_query
       doc = read(action_uri)
       error = REXML::XPath.first(doc.root, "//response/error")
       raise "Could not reactivate #{bugid}:\n#{doc}" if error
       $stderr.puts "Reactivated #{bugid}"
     end
 
-    def reference(bugid, committer)
+    def reference(bugid, committer, msg)
       action_uri = api_uri.dup
       action_uri.query = {"cmd" => "edit", "token" => committer,
                           "ixBug" => bugid,
-                          "sEvent" => "Referenced in r#{revision}."}.to_query
+                          "sEvent" => "Referenced in r#{revision}:  #{msg}"}.to_query
       doc = read(action_uri)
       error = REXML::XPath.first(doc.root, "//response/error")
       raise "Could not reference #{bugid}:\n#{doc}" if error
