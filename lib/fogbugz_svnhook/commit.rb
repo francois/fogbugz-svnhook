@@ -1,4 +1,6 @@
 require "fogbugz_svnhook/base"
+require "fogbugz_svnhook/parser"
+require "fogbugz_svnhook/listener"
 
 module FogbugzSvnhook
   class Commit < FogbugzSvnhook::Base
@@ -40,38 +42,9 @@ module FogbugzSvnhook
     end
 
     def parse(msg)
-      returning(Hash.new {|h,k| h[k] = Array.new}) do |actions|
-        msg.scan(/(?:(?:references?)|(?:(?:re)?(?:opens?|activates?))|(?:implements?)|(?:fix(?:es)?)|(?:closes?)):?\s*#\d+(?:,\s*#\d+)*/i) do |section|
-          case section
-          when /close/i
-            section.scan(/#\d+/) do |bugid|
-              actions[bugid[1..-1].to_i] << :close
-            end
-          when /fix/i
-            section.scan(/#\d+/) do |bugid|
-              actions[bugid[1..-1].to_i] << :fix
-            end
-          when /implement/i
-            section.scan(/#\d+/) do |bugid|
-              actions[bugid[1..-1].to_i] << :implement
-            end
-          when /activate/i
-            section.scan(/#\d+/) do |bugid|
-              actions[bugid[1..-1].to_i] << :reactivate
-            end
-          when /open/i
-            section.scan(/#\d+/) do |bugid|
-              actions[bugid[1..-1].to_i] << :reopen
-            end
-          when /reference/i
-            section.scan(/#\d+/) do |bugid|
-              actions[bugid[1..-1].to_i] << :reference
-            end
-          else
-            raise "Unhandled section: #{section.inspect}"
-          end
-        end
-      end
+      listener = FogbugzSvnhook::Listener.new
+      FogbugzSvnhook::Parser.parse(msg, listener)
+      listener.cases
     end
 
     def map_committer_to_token
