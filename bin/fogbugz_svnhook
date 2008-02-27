@@ -3,7 +3,9 @@
 require "rubygems"
 require "main"
 require "uri"
-require "lib/fogbugz_svnhook"
+
+$: << File.dirname(__FILE__) + "/../lib"
+require "fogbugz_svnhook"
 
 Main {
   option("url") {
