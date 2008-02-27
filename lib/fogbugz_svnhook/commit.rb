@@ -1,5 +1,5 @@
 require "fogbugz_svnhook/base"
-require "fogbugz_svnhook/parser"
+require "fogbugz_svnhook/parser" if File.exist?(File.join(File.dirname(__FILE__), "parser.rb"))
 require "fogbugz_svnhook/listener"
 
 module FogbugzSvnhook
