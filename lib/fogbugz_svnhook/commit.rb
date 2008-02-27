@@ -71,7 +71,7 @@ module FogbugzSvnhook
       doc = read(action_uri)
       error = REXML::XPath.first(doc.root, "//response/error")
       raise "Could not close #{bugid}:\n#{doc}" if error
-      $stderr.puts "Closed #{bugid}"
+      puts "Closed #{bugid}"
     end
 
     def fix(bugid, committer, msg)
@@ -82,7 +82,7 @@ module FogbugzSvnhook
       doc = read(action_uri)
       error = REXML::XPath.first(doc.root, "//response/error")
       raise "Could not fix #{bugid}:\n#{doc}" if error
-      $stderr.puts "Fixed #{bugid}"
+      puts "Fixed #{bugid}"
     end
 
     def implement(bugid, committer, msg)
@@ -93,7 +93,7 @@ module FogbugzSvnhook
       doc = read(action_uri)
       error = REXML::XPath.first(doc.root, "//response/error")
       raise "Could not implement #{bugid}:\n#{doc}" if error
-      $stderr.puts "Implemented #{bugid}"
+      puts "Implemented #{bugid}"
     end
 
     def reopen(bugid, committer, msg)
@@ -104,7 +104,7 @@ module FogbugzSvnhook
       doc = read(action_uri)
       error = REXML::XPath.first(doc.root, "//response/error")
       raise "Could not reopen #{bugid}:\n#{doc}" if error
-      $stderr.puts "Reopened #{bugid}"
+      puts "Reopened #{bugid}"
     end
 
     def reactivate(bugid, committer, msg)
@@ -115,7 +115,7 @@ module FogbugzSvnhook
       doc = read(action_uri)
       error = REXML::XPath.first(doc.root, "//response/error")
       raise "Could not reactivate #{bugid}:\n#{doc}" if error
-      $stderr.puts "Reactivated #{bugid}"
+      puts "Reactivated #{bugid}"
     end
 
     def reference(bugid, committer, msg)
@@ -126,7 +126,7 @@ module FogbugzSvnhook
       doc = read(action_uri)
       error = REXML::XPath.first(doc.root, "//response/error")
       raise "Could not reference #{bugid}:\n#{doc}" if error
-      $stderr.puts "Referenced #{bugid}"
+      puts "Referenced #{bugid}"
     end
 
     STATES = {:fixed => 2, :completed => 15, :implemented => 8}
