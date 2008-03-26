@@ -3,7 +3,7 @@ require "fogbugz_svnhook/parser" if File.exist?(File.join(File.dirname(__FILE__)
 require "fogbugz_svnhook/listener"
 
 module FogbugzSvnhook
-  class Commit < FogbugzSvnhook::Base
+  class PostCommit < FogbugzSvnhook::Base
     attr_reader :svnlook, :repository, :revision
 
     def initialize(options={})

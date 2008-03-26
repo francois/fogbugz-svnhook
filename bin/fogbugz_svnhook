@@ -88,13 +88,17 @@ Main {
 
   mode "pre-commit" do
     mixin :common
+
+    def run
+      FogbugzSvnhook.pre_commit(:uri => params["url"].value, :repository => params["repository"].value, :revision => params["revision"].value, :svnlook => params["svnlook"].value, :config => params["config"].value)
+    end
   end
 
   mode "post-commit" do
     mixin :common
 
     def run
-      FogbugzSvnhook.commit(:uri => params["url"].value, :repository => params["repository"].value, :revision => params["revision"].value, :svnlook => params["svnlook"].value, :config => params["config"].value)
+      FogbugzSvnhook.post_commit(:uri => params["url"].value, :repository => params["repository"].value, :revision => params["revision"].value, :svnlook => params["svnlook"].value, :config => params["config"].value)
     end
   end
 

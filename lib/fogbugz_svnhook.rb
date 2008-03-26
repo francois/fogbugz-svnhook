@@ -2,7 +2,8 @@ $:.unshift File.dirname(__FILE__)
 
 require "fogbugz_svnhook/login"
 require "fogbugz_svnhook/logoff"
-require "fogbugz_svnhook/commit"
+require "fogbugz_svnhook/pre_commit"
+require "fogbugz_svnhook/post_commit"
 
 module FogbugzSvnhook
   class << self
@@ -14,8 +15,12 @@ module FogbugzSvnhook
       FogbugzSvnhook::Logoff.new(options).run
     end
 
-    def commit(options)
-      FogbugzSvnhook::Commit.new(options).run
+    def pre_commit(options)
+      FogbugzSvnhook::PreCommit.new(options).run
+    end
+
+    def post_commit(options)
+      FogbugzSvnhook::PostCommit.new(options).run
     end
   end 
 end
