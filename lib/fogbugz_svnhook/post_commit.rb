@@ -13,6 +13,10 @@ module FogbugzSvnhook
       @revision = Integer(options[:revision])
     end
 
+    def svnlook_option_name
+      :revision
+    end
+
     def run
       get_missing_options
       msg = get_commit_message
@@ -36,7 +40,7 @@ module FogbugzSvnhook
     end
 
     def get_commit_message
-      msg = `#{svnlook} log --revision #{revision} #{repository}`
+      msg = `#{svnlook} log --#{svnlook_option_name} #{revision} #{repository}`
       return msg if $?.success?
       raise "Failed to get commit message, svnlook exited with status #{$?.exitstatus}"
     end
@@ -48,7 +52,7 @@ module FogbugzSvnhook
     end
 
     def map_committer_to_token
-      author = `#{svnlook} author --revision #{revision} #{repository}`
+      author = `#{svnlook} author --#{svnlook_option_name} #{revision} #{repository}`
       raise "Failed to get commit message, svnlook exited with status #{$?.exitstatus}" unless $?.success?
       author.chomp!
       config["tokens"][author]

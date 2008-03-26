@@ -1,9 +1,17 @@
 require "fogbugz_svnhook/base"
-require "fogbugz_svnhook/parser" if File.exist?(File.join(File.dirname(__FILE__), "parser.rb"))
-require "fogbugz_svnhook/listener"
+require "fogbugz_svnhook/post_commit"
 
 module FogbugzSvnhook
   class PreCommit < FogbugzSvnhook::PostCommit
+    def initialize(options={})
+      super(options.merge(:revision => 0))
+      @revision = options[:revision] # We don't want to parse revision as an Integer, since we're using a transaction in the pre-commit hook
+    end
+
+    def svnlook_option_name
+      :transaction
+    end
+
     def close(bugid, committer, msg)
       $stderr.puts "Closing \##{bugid}"
     end
