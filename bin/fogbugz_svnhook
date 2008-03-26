@@ -13,7 +13,7 @@ Main {
       required
       argument_required
       cast :uri
-      validate {|url| URI.parse(url).absolute?}
+      validate {|url| url.absolute?}
       description "The URL to the FogBugz installation, typically http://yoursite.com/fogbugz/"
     }
   end
@@ -37,7 +37,7 @@ Main {
     }
 
     def run
-      FogbugzSvnhook.login(:uri => params["url"].value, :email => params["email"].value, :password => params["password"].value)
+      FogbugzSvnhook.login(:uri => params["url"].value, :username => params["username"].value, :email => params["email"].value, :password => params["password"].value)
     end
   end
 
