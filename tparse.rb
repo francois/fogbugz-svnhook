@@ -3,33 +3,34 @@ listener = Object.new
 raise "Missing text to match" unless ARGV[0]
 
 class << listener
-  def fix(bugid)
-    puts "Fixing #{bugid}"
+  def close
+    @state = :close
   end
 
-  def close(bugid)
-    puts "Closing #{bugid}"
+  def reference
+    @state = :reference
   end
 
-  def implement(bugid)
-    puts "Implementing #{bugid}"
+  def fix
+    @state = :fix
   end
 
-  def reopen(bugid)
-    puts "Reopens #{bugid}"
+  def reopen
+    @state = :reopen
   end
 
-  def reactivate(bugid)
-    puts "Reactivates #{bugid}"
+  def reactivate
+    @state = :reactivate
   end
 
-  def reference(bugid)
-    puts "References #{bugid}"
+  def implement
+    @state = :implement
   end
 
-  def assign(name)
-    puts "Assigned to #{name.inspect}"
+  def case(number)
+    printf "%s %s\n", @state.to_s, number
   end
 end
 
+listener.reference
 FogbugzSvnhook::Parser.parse(ARGV[0], listener)
