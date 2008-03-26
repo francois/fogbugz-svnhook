@@ -8,67 +8,104 @@ $: << File.dirname(__FILE__) + "/../lib"
 require "fogbugz_svnhook"
 
 Main {
-  option("url") {
-    required
-    argument_required
-    validate {|url| URI.parse(url).absolute?}
-    description "The URL to the FogBugz installation, typically http://yoursite.com/fogbugz/"
-  }
+  mixin(:url) do
+    option("url") {
+      required
+      argument_required
+      cast :uri
+      validate {|url| URI.parse(url).absolute?}
+      description "The URL to the FogBugz installation, typically http://yoursite.com/fogbugz/"
+    }
+  end
 
-  option("config", "C") {
-    argument_required
-    description "The path to a fogbugz-svnhook config file (YAML)"
-  }
+  mode "login" do
+    mixin :url
 
-  option("svnlook") {
-    argument_required
-    default "/usr/bin/svnlook"
-    description "The path to the svnlook executable (defaults to /usr/bin/svnlook)"
-  }
+    option("email") {
+      argument_required
+      description "The E-Mail address with which you login to FogBugz"
+    }
 
-  option("email") {
-    argument_required
-    description "The E-Mail address with which you login to FogBugz"
-  }
+    option("password") {
+      argument_required
+      description "The password you use on the FogBugz site"
+    }
 
-  option("token") {
-    argument_required
-    description "The token with which you are authenticated to FogBugz"
-  }
+    option("username") {
+      argument_required
+      description "Your Subversion username"
+    }
 
-  option("password") {
-    argument_required
-    description "The password you use on the FogBugz site"
-  }
+    def run
+      FogbugzSvnhook.login(:uri => params["url"].value, :email => params["email"].value, :password => params["password"].value)
+    end
+  end
 
-  argument("command") {
-    required
-  }
+  mode "logoff" do
+    mixin :url
 
-  argument("repository") {
-    optional
-    description "The path to the Subversion repository"
-  }
+    option("token") {
+      argument_required
+      required
+      description "The token with which you are authenticated to FogBugz"
+    }
 
-  argument("revision") {
-    optional
-    description "The revision which is being committed"
-  }
+    def run
+      FogbugzSvnhook.logoff(:uri => params["url"].value, :token => params["token"].value)
+    end
+  end
+
+  mode "config" do
+    def run
+      FogbugzSvnhook.config(:uri => params["url"].value)
+    end
+  end
+
+  mixin :common do
+    mixin :url
+
+    option("config", "C") {
+      argument_required
+      description "The path to a fogbugz-svnhook config file (YAML)"
+    }
+
+    option("svnlook") {
+      argument_required
+      default "/usr/bin/svnlook"
+      description "The path to the svnlook executable (defaults to /usr/bin/svnlook)"
+    }
+
+    argument("repository") {
+      optional
+      description "The path to the Subversion repository"
+    }
+
+    argument("revision") {
+      optional
+      description "The revision which is being committed"
+    }
+  end
+
+  mode "pre-commit" do
+    mixin :common
+  end
+
+  mode "post-commit" do
+    mixin :common
+
+    def run
+      FogbugzSvnhook.commit(:uri => params["url"].value, :repository => params["repository"].value, :revision => params["revision"].value, :svnlook => params["svnlook"].value, :config => params["config"].value)
+    end
+  end
+
+  mode "version" do
+    def run
+      require "fogbugz_svnhook/version"
+      puts "FogbugzSvnhook, v#{FogbugzSvnhook::VERSION::STRING}"
+    end
+  end
 
   def run
-    real_uri = URI.parse(params["url"].value)
-
-    case params["command"].value
-    when "login"
-      FogbugzSvnhook.login(:uri => real_uri, :email => params["email"].value, :password => params["password"].value)
-    when "logoff"
-      FogbugzSvnhook.logoff(:uri => real_uri, :token => params["token"].value)
-    when "config"
-      FogbugzSvnhook.config(:uri => real_uri)
-    when "commit"
-      FogbugzSvnhook.commit(:uri => real_uri, :repository => params["repository"].value, :revision => params["revision"].value, :svnlook => params["svnlook"].value, :config => params["config"].value)
-    else
-      raise ArgumentError, "Unknown command: #{params["command"].value}"
-    end
+    abort "No mode given.  Call with 'help' for usage information."
   end
 }
